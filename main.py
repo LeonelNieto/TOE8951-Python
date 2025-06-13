@@ -51,7 +51,7 @@ def send_cmd( command:str, expect_response=True ) -> str:
         return ser.readline( ).decode( ).strip( )
     return None
 
-def close_comPort( ):
+def Close_Power_Supply_COM_Port( ):
     ser.close
 
 if __name__ == '__main__':
@@ -65,4 +65,4 @@ if __name__ == '__main__':
     measure_current( )
     measure_power( )
     turn_OFF_powerSupply
-    close_comPort( )
+    Close_Power_Supply_COM_Port( )

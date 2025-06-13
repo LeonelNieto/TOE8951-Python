@@ -1,43 +1,68 @@
-import serial
 import time
+import serial
 
-ser = serial.Serial(
-    port='COM13',           
-    baudrate=9600,
-    bytesize=serial.EIGHTBITS,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    timeout=1
-)
+def init_comPort( comPort:str ):
+    global ser
+    ser = serial.Serial(
+        port=comPort,
+        baudrate=9600,
+        bytesize=serial.EIGHTBITS,
+        parity=serial.PARITY_NONE,
+        stopbits=serial.STOPBITS_ONE,
+        timeout=1
+    )
 
-def send_cmd(cmd, expect_response=True):
-    ser.write((cmd + '\n').encode())
+def init_powerSupply(  ):
+        idn = send_cmd( "*IDN?" )
+        print( idn )
+        send_cmd( "SYST:REM", expect_response=False )              #Set power supply in remote
+
+def set_voltage( voltage:float ):
+    send_cmd( f"SOUR:VOLT {voltage}", expect_response=False )
+
+def set_max_current( current:float ):
+    send_cmd( f"SOUR:CURR {current}", expect_response=False )
+
+def turn_ON_powerSupply( ):
+    send_cmd( "OUTP ON", expect_response=False )
+
+def turn_OFF_powerSupply( ):
+    send_cmd( "OUTP OFF", expect_response=False )
+
+def measure_voltage( ) -> float:
+    voltage = send_cmd("MEAS:VOLT?")
+    print( f"Volatge meausre: {voltage} V" )
+    return voltage
+
+def measure_current( ) -> float:
+    current = send_cmd("MEAS:CURR?")
+    print( f"Current measure: {current} A" )
+    return current
+    
+def measure_power( ) -> float:
+    power = send_cmd("MEAS:POW?")
+    print( f"Power measure: {power} W" )
+    return power
+
+def send_cmd( command:str, expect_response=True ) -> str:
+    ser.write( ( command + '\n' ).encode( ) ) 
     if expect_response:
-        time.sleep(0.1)
-        return ser.readline().decode().strip()
+        time.sleep( 0.1 )
+        return ser.readline( ).decode( ).strip( )
     return None
 
-try:
-    idn = send_cmd("*IDN?")
-    print(f"Identification: {idn}")
+def close_comPort( ):
+    ser.close
 
-    send_cmd("SYST:REM", expect_response=False)
-    send_cmd("SOUR:VOLT 13", expect_response=False)
-    send_cmd("SOUR:CURR 10", expect_response=False)
-    send_cmd("OUTP ON", expect_response=False)
-    time.sleep(1)
-  
-    voltage = send_cmd("MEAS:VOLT?")
-    current = send_cmd("MEAS:CURR?")
-    power   = send_cmd("MEAS:POW?")
-    print(f"Voltage mesure: {voltage} V")
-    print(f"Current mesure: {current} A")
-    print(f"Power mesure: {power} W")
-    time.sleep(1)
-
-    send_cmd("OUTP OFF", expect_response=False)
-
-except Exception as e:
-    print(f"Error: {e}")
-finally:
-    ser.close()
+if __name__ == '__main__':
+    init_comPort( "COM13" )
+    init_powerSupply( )
+    set_voltage( 13.4 )
+    set_max_current( 5 )
+    turn_ON_powerSupply( )
+    time.sleep( 1 )
+    measure_voltage( )
+    measure_current( )
+    measure_power( )
+    turn_OFF_powerSupply
+    close_comPort( )

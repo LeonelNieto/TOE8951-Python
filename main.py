@@ -64,5 +64,5 @@ if __name__ == '__main__':
     measure_voltage( )
     measure_current( )
     measure_power( )
-    turn_OFF_powerSupply
+    turn_OFF_powerSupply( )
     Close_Power_Supply_COM_Port( )
